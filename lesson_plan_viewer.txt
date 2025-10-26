@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PILE EAST Weekly Lesson Plan Generator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .section-header {
+            background-color: #f0f4f8;
+            border-left: 5px solid #3b82f6; /* Blue border for visual structure */
+        }
+        .collapse-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+        }
+        .collapse-content.active {
+            max-height: 2000px; /* Large enough to accommodate content */
+            opacity: 1;
+            padding-top: 1rem;
+        }
+        .day-focus {
+            font-weight: 600;
+            color: #1d4ed8;
+        }
+        /* Custom styling for the PILE EAST sections */
+        .pile-east-section {
+            padding: 0.5rem 0.75rem;
+            margin-top: 0.5rem;
+            border-radius: 0.375rem;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+        .pile-east-label {
+            display: inline-block;
+            width: 3rem; /* Fixed width for alignment */
+            font-weight: 700;
+            color: #059669; /* Green for section labels */
+        }
+        .table-header {
+            background-color: #e0f2f1;
+            color: #065f46;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div id="app" class="max-w-4xl mx-auto bg-white shadow-2xl rounded-xl p-6 sm:p-10 border border-gray-100">
+
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-800 mb-2">🧭 PILE EAST Weekly Lesson Plan Generator</h1>
+            <p class="text-sm text-gray-500 font-medium mb-1">Developed by Arlene E. Mendoza</p>
+            <p class="text-xl font-semibold text-gray-600 border-b pb-3 mb-4" id="plan-title">Differentiating Physical and Chemical Changes in Matter</p>
+        </header>
+        
+        <!-- Input Form Section -->
+        <section id="input-form" class="bg-gray-100 p-6 rounded-xl mb-8 border border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">New Lesson Plan Inputs</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label for="subject-input" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                    <input type="text" id="subject-input" value="Science" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Mathematics">
+                </div>
+                <div>
+                    <label for="grade-input" class="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
+                    <input type="text" id="grade-input" value="Grade 5" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Grade 10">
+                </div>
+                <div class="md:col-span-3">
+                    <label for="competency-input" class="block text-sm font-medium text-gray-700 mb-1">Learning Competency (Unpacked)</label>
+                    <textarea id="competency-input" rows="2" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Analyze the political, economic, and social factors that led to the American Revolution.">differentiate chemical change from physical changes of matter (S5MT-Ic-d-3)</textarea>
+                </div>
+            </div>
+            <button onclick="generatePlanFromUI()" class="w-full md:w-auto px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150">
+                Generate 5-Day PILE EAST Plan
+            </button>
+        </section>
+
+        <!-- Metadata Section (Dynamically Updated) -->
+        <div id="metadata" class="text-sm bg-blue-50 p-4 rounded-lg mb-8 space-y-2 text-gray-700">
+            <!-- Content updated by JS -->
+        </div>
+
+        <!-- Weekly Overview -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Weekly Overview</h2>
+        <div id="overview-table" class="mb-8 overflow-x-auto">
+            <!-- Table content rendered by JS -->
+        </div>
+
+        <!-- Daily Lesson Plans -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Daily Lesson Plans</h2>
+        <div id="daily-plans" class="space-y-4">
+            <!-- Daily plan cards rendered by JS -->
+        </div>
+
+    </div>
+
+    <script>
+        // --- DEFAULT DATA (Science Example) ---
+        const defaultSubject = "Science";
+        const defaultGrade = "Grade 5";
+        const defaultCompetency = "differentiate chemical change from physical changes of matter (S5MT-Ic-d-3)";
+
+        // Function to create structured data based on input
+        function generatePlanData(subject, grade, competency) {
+            const verb = competency.toLowerCase().match(/^(learners will be able to |)\s*(\w+)/)?.[2] || 'cover';
+            const topic = competency.split('from')[0].trim().replace(/^(learners will be able to |)\s*(\w+)\s*/, '').trim() || "Core Concepts";
+
+            let objectives = [];
+            let overviewData = [];
+            let dailyPlans = [];
+            let unpackedVerbs = [];
+            let titleText = topic;
+
+            // Mock Unpacking Logic based on Bloom's Taxonomy/Complexity
+            if (['differentiate', 'compare', 'contrast', 'analyze'].includes(verb)) {
+                unpackedVerbs = ['Define/Identify', 'Describe/Differentiate', 'Explain/Demonstrate', 'Analyze/Apply', 'Evaluate/Synthesize'];
+                objectives = [
+                    `**Define** key terms and **identify** simple components of ${topic}.`,
+                    `**Describe** and **differentiate** the characteristics of the core concepts in ${topic}.`,
+                    `**Analyze** the relationship between components by **justifying** classification based on evidence.`,
+                ];
+            } else if (['explain', 'describe', 'demonstrate'].includes(verb)) {
+                unpackedVerbs = ['Define/Identify', 'Describe/List', 'Explain/Sequence', 'Demonstrate/Apply', 'Review/Assess'];
+                objectives = [
+                    `**Define** and **identify** the foundational principles of ${topic}.`,
+                    `**Describe** the main characteristics and steps involved in ${topic}.`,
+                    `**Demonstrate** mastery by correctly **applying** the steps of ${topic} to a new scenario.`,
+                ];
+            } else { // Generic or lower-order verbs (e.g., list, recall)
+                unpackedVerbs = ['Recall/Define', 'List/Describe', 'Connect/Illustrate', 'Practice/Apply', 'Review/Assess'];
+                objectives = [
+                    `**Recall** and **define** the key terminology related to ${topic}.`,
+                    `**List** and **describe** the main elements involved in ${topic}.`,
+                    `**Apply** the knowledge of ${topic} to simple, relevant problems.`,
+                ];
+            }
+
+            // Generate Overview and Daily Plans
+            const defaultActivities = {
+                'Define/Identify': { activity: 'Introductory Demos and Vocabulary', output: 'Learners establish key vocabulary and initial understanding.' },
+                'Describe/Differentiate': { activity: 'Comparative T-Chart & Guided Discussion', output: 'Learners understand the main components and relationships.' },
+                'Explain/Demonstrate': { activity: 'Case Study or Hands-on Application', output: 'Learners explain the how and why of the competency\'s subject.' },
+                'Analyze/Apply': { activity: 'Critical Thinking/Performance Task', output: 'Learners use the concepts to solve problems or create solutions.' },
+                'Evaluate/Synthesize': { activity: 'Summative Assessment and Reflection', output: 'Learners demonstrate comprehensive mastery of the competency.' },
+                // Fallbacks for generic verbs
+                'Recall/Define': { activity: 'Flashcard Drills and Pre-test', output: 'Learners recall foundational terms.' },
+                'List/Describe': { activity: 'Mind-Mapping Exercise', output: 'Learners organize and describe the listed elements.' },
+                'Connect/Illustrate': { activity: 'Visual Modeling Task', output: 'Learners connect concepts through diagrams.' },
+                'Practice/Apply': { activity: 'Collaborative Problem-Solving', output: 'Learners apply knowledge to textbook problems.' },
+                'Review/Assess': { activity: 'Comprehensive Quiz & Feedback', output: 'Learners demonstrate mastery.' },
+            };
+            
+            const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            
+            unpackedVerbs.forEach((focus, index) => {
+                const activityInfo = defaultActivities[focus] || defaultActivities[unpackedVerbs[index]];
+                
+                overviewData.push({
+                    day: daysOfWeek[index],
+                    focus: focus,
+                    activity: activityInfo.activity,
+                    output: activityInfo.output,
+                });
+
+                // Generate detailed sections (P.I.L.E. E. A. A. S. T.)
+                dailyPlans.push({
+                    day: `${daysOfWeek[index]} – ${focus}`,
+                    sections: generateDailySections(subject, grade, focus, topic),
+                });
+            });
+
+            return {
+                subject,
+                grade,
+                competency,
+                objectives,
+                titleText,
+                overviewData,
+                dailyPlans,
+            };
+        }
+
+        // Generates the content for the PILE EAST sections based on the focus
+        function generateDailySections(subject, grade, focus, topic) {
+             const sections = {};
+             const coreActivity = focus.split('/')[0];
+             const materials = (subject === 'Science') ? 'Lab materials, safety gear, printed worksheets.' : 'Textbooks, digital resources, projector.';
+             
+             sections.P = `**Preparation:** Motivational warm-up to activate prior knowledge related to **${coreActivity}**. Materials: ${materials}`;
+             sections.I = `**Introduction:** Present a scenario or guiding question that transitions into the **${coreActivity}** skill. Focus: "We move from [previous day's focus] to deeply understanding the **${coreActivity}** process."`;
+             sections.L = `**Lesson Proper:** Guide learners through structured activities to **${coreActivity}** the core concepts of **${topic}**. Emphasize critical thinking and using evidence.`;
+             sections.E = `**Evaluation:** Short formative task requiring learners to immediately apply the **${coreActivity}** skill (e.g., a short written analysis or classification task).`;
+             sections.A = `**Application:** Collaborative project where groups must **${coreActivity}** the concept to a new, complex problem relevant to ${grade} ${subject}.`;
+             sections.AA = `**Assignment:** Independent practice task focused on the **${coreActivity}** skill (e.g., find and annotate a real-world example, or solve 3 challenging problems).`;
+             sections.S = `**Summary:** Teacher and students summarize the key steps and findings related to the **${coreActivity}** focus of the day.`;
+             sections.T = `**Teacher’s Reflection:** Were learners able to successfully **${coreActivity}**? What common difficulties were observed in today's lesson?`;
+
+             return sections;
+        }
+
+
+        // --- RENDERING FUNCTIONS ---
+
+        function updateMetadata(data) {
+            const metadataEl = document.getElementById('metadata');
+            const objectivesList = data.objectives.map(obj => `<li>${obj}</li>`).join('');
+
+            // Placeholder Resources based on general subject
+            const resources = (data.subject.toLowerCase().includes('science')) ?
+                'Safety guidelines, common lab materials, printed lab sheets, projector.' :
+                (data.subject.toLowerCase().includes('math')) ?
+                'Calculators, graphing paper, problem sets, digital simulation tools.' :
+                'Historical documents, literature excerpts, digital devices for research.';
+
+            metadataEl.innerHTML = `
+                <p><span class="font-bold text-blue-700">Subject:</span> ${data.subject}</p>
+                <p><span class="font-bold text-blue-700">Grade Level:</span> ${data.grade}</p>
+                <p><span class="font-bold text-blue-700">Learning Competency:</span> ${data.competency}</p>
+                <p><span class="font-bold text-blue-700">Duration:</span> 5 Days (50 minutes per day)</p>
+                <p><span class="font-bold text-blue-700">Objectives:</span></p>
+                <ul class="list-disc list-inside ml-4 space-y-1">${objectivesList}</ul>
+                <p><span class="font-bold text-blue-700">Teaching Aids / Resources:</span> ${resources}</p>
+            `;
+            document.getElementById('plan-title').textContent = data.titleText;
+        }
+
+        function createOverviewTable(data) {
+            const container = document.getElementById('overview-table');
+            container.innerHTML = ''; // Clear previous content
+            
+            const table = document.createElement('table');
+            table.className = "min-w-full divide-y divide-gray-200 rounded-lg shadow-md";
+            
+            // Table Header
+            const thead = table.createTHead();
+            thead.innerHTML = `
+                <tr class="table-header text-xs font-medium uppercase tracking-wider">
+                    <th class="px-3 py-3 text-left rounded-tl-lg">Day</th>
+                    <th class="px-3 py-3 text-left">Focus (Unpacked Skill)</th>
+                    <th class="px-3 py-3 text-left">Key Activity</th>
+                    <th class="px-3 py-3 text-left rounded-tr-lg">Expected Output</th>
+                </tr>
+            `;
+
+            // Table Body
+            const tbody = document.createElement('tbody');
+            tbody.className = "bg-white divide-y divide-gray-200";
+            data.overviewData.forEach((item, index) => {
+                const row = tbody.insertRow();
+                row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${item.day}</td>
+                    <td class="px-3 py-3 text-sm day-focus">${item.focus}</td>
+                    <td class="px-3 py-3 text-sm text-gray-700">${item.activity}</td>
+                    <td class="px-3 py-3 text-sm text-gray-700">${item.output}</td>
+                `;
+            });
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+
+        function createDailyPlanCards(data) {
+            const container = document.getElementById('daily-plans');
+            container.innerHTML = ''; // Clear previous content
+            
+            data.dailyPlans.forEach((dayData, index) => {
+                const card = document.createElement('div');
+                card.className = "border border-gray-200 rounded-xl shadow-lg transition-all duration-300";
+                
+                // Header (Clickable)
+                const header = document.createElement('div');
+                header.className = "section-header p-4 cursor-pointer flex justify-between items-center rounded-t-xl hover:bg-blue-100";
+                header.setAttribute('role', 'button');
+                header.setAttribute('aria-expanded', 'false');
+                header.innerHTML = `
+                    <h3 class="text-lg font-semibold text-gray-800">${dayData.day}</h3>
+                    <svg class="w-5 h-5 text-blue-700 transform transition-transform duration-300" data-toggle="icon-${index}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                `;
+                header.onclick = () => toggleCollapse(index);
+                card.appendChild(header);
+
+                // Content (Collapsible)
+                const content = document.createElement('div');
+                content.id = `content-${index}`;
+                content.className = "collapse-content p-4 bg-white rounded-b-xl";
+                content.setAttribute('aria-hidden', 'true');
+                
+                // Render PILE EAST sections
+                const sectionsHtml = Object.entries(dayData.sections).map(([key, value]) => {
+                    const labelMap = {
+                        P: 'Preparation', I: 'Introduction', L: 'Lesson Proper', E: 'Evaluation', 
+                        A: 'Application', AA: 'Assignment', S: 'Summary', T: 'Teacher’s Reflection'
+                    };
+                    const fullLabel = labelMap[key] || key;
+                    
+                    return `
+                        <div class="pile-east-section text-gray-700">
+                            <span class="pile-east-label">${key} –</span> 
+                            <span class="font-medium text-gray-900">${fullLabel}</span>: 
+                            <span class="ml-2">${value}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                content.innerHTML = `<div class="p-2 border-t border-gray-200">${sectionsHtml}</div>`;
+                card.appendChild(content);
+                container.appendChild(card);
+            });
+        }
+
+        function toggleCollapse(index) {
+            const content = document.getElementById(`content-${index}`);
+            const icon = document.querySelector(`[data-toggle="icon-${index}"]`);
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                icon.classList.remove('rotate-180');
+                content.setAttribute('aria-hidden', 'true');
+            } else {
+                content.classList.add('active');
+                icon.classList.add('rotate-180');
+                content.setAttribute('aria-hidden', 'false');
+            }
+        }
+        
+        // Main function to run when 'Generate Plan' is clicked
+        function generatePlanFromUI() {
+            const subject = document.getElementById('subject-input').value.trim() || defaultSubject;
+            const grade = document.getElementById('grade-input').value.trim() || defaultGrade;
+            const competency = document.getElementById('competency-input').value.trim() || defaultCompetency;
+            
+            const planData = generatePlanData(subject, grade, competency);
+            renderPlan(planData);
+        }
+
+        // Consolidated render function
+        function renderPlan(planData) {
+            updateMetadata(planData);
+            createOverviewTable(planData);
+            createDailyPlanCards(planData);
+        }
+
+        // Initialize App with default data on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            generatePlanFromUI(); // Loads the default Science plan initially
+        });
+    </script>
+</body>
+</html>
